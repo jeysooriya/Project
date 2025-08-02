@@ -1,0 +1,83 @@
+import yfinance as yf
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Tesla Stock Data
+tesla = yf.Ticker("TSLA")
+tesla_data = tesla.history(period="max")
+tesla_data.reset_index(inplace=True)
+tesla_data.head()
+# GameStop Stock Data
+gme = yf.Ticker("GME")
+gme_data = gme.history(period="max")
+gme_data.reset_index(inplace=True)
+gme_data.head()
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+# Step 1: Target the Tesla revenue page from Macrotrends
+url = "https://www.macrotrends.net/stocks/charts/TSLA/tesla/revenue"
+
+# Step 2: Use headers to avoid 403 Forbidden error
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+
+# Step 3: Make the request
+response = requests.get(url, headers=headers)
+
+# Step 4: Parse the HTML content
+soup = BeautifulSoup(response.text, 'html.parser')
+
+# Step 5: Find all tables on the page
+tables = soup.find_all("table")
+
+# Step 6: Filter the correct table with "Tesla Quarterly Revenue"
+for table in tables:
+    if "Tesla Quarterly Revenue" in table.text:
+        tesla_revenue = pd.read_html(str(table))[0]
+        break
+
+tesla_revenue.columns = ["Date", "Revenue"]
+tesla_revenue["Revenue"] = tesla_revenue["Revenue"].str.replace("$", "").str.replace(",", "")
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+# URL for GME Revenue on Macrotrends
+url = "https://www.macrotrends.net/stocks/charts/GME/gamestop/revenue"
+
+# Fake browser header to bypass 403 Forbidden
+headers = {"User-Agent": "Mozilla/5.0"}
+
+# Send request
+response = requests.get(url, headers=headers)
+
+# Parse HTML
+soup = BeautifulSoup(response.text, 'html.parser')
+tables = soup.find_all('table')
+
+# Find the table containing "GameStop Quarterly Revenue"
+for table in tables:
+    if "GameStop Quarterly Revenue" in table.text:
+        gme_revenue = pd.read_html(str(table))[0]
+        break
+# Clean the dataframe
+gme_revenue.columns = ["Date", "Revenue"]
+gme_revenue["Revenue"] = gme_revenue["Revenue"].str.replace("$", "").str.replace(",", "")
+gme_revenue = gme_revenue[gme_revenue["Revenue"] != ""]  
+gme_revenue.tail()
+def make_graph(data, title):
+    plt.figure(figsize=(14,6))
+    plt.plot(data["Date"], data["Close"])
+    plt.title(title)
+    plt.xlabel("Date")
+    plt.ylabel("Closing Price (USD)")
+    plt.grid(True)
+    plt.show()
+
+make_graph(tesla_data, "Tesla Stock Price Over Time")
+make_graph(gme_data, "GameStop Stock Price Over Time")
+
+tesla_revenue.tail()
